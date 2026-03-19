@@ -17,6 +17,49 @@ pipeline {
                url: 'https://github.com/Crola1702-DSO-CICD-Testing/' + env.GIT_REPO
          }
       }
+      stage('Build') {
+         option {
+            timeout(time: 5, unit: 'MINUTES')
+         }
+         script {
+            CURRENT_STAGE = 'Build'
+            sh "docker build --target build -t ${env.GIT_REPO}-build:latest ."
+         }
+      }
+      stage('Test') {
+         options {
+            timeout(time: 5, unit: 'MINUTES')
+         }
+         steps {
+            script {
+               CURRENT_STAGE = 'Build and Test'
+               sh "docker build --target test -t ${env.GIT_REPO}-test:latest ."
+            }
+         }
+      }
+      stage('Package Runtime Image') {
+         options {
+            timeout(time: 2, unit: 'MINUTES')
+         }
+         steps {
+            script {
+               CURRENT_STAGE = 'Package Runtime Image'
+               sh "docker build -t ${env.GIT_REPO}-runtime:${env.BUILD_ID} -t ${env.GIT_REPO}-runtime:latest ."
+            }
+         }
+      }
+      stage('Save Docker Artifact') {
+         steps {
+            script {
+               CURRENT_STAGE = 'Save Docker Artifact'
+               // Export the Docker image to a .tar file
+               sh "docker save -o ${env.GIT_REPO}-runtime-${env.BUILD_ID}.tar ${env.GIT_REPO}-runtime:latest"
+               
+               // Archive the .tar file natively in Jenkins
+               archiveArtifacts artifacts: "*.tar", fingerprint: true
+            }
+         }
+      }
       // stage('GitInspector') { 
       //    steps {
       //       withCredentials([usernamePassword(credentialsId: env.GIT_CREDENTIAL_ID, passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
@@ -33,55 +76,55 @@ pipeline {
       //       ])
       //    }
       // }
-      stage('Build') {
-         // Build artifacts
-         options {
-            timeout(time: 1, unit: 'MINUTES')
-         }
-         steps {
-            script {
-               CURRENT_STAGE = 'Build'
-               docker.image('citools-isis2603:latest').inside('-v $HOME/.m2:/root/.m2:z -u root') {
-                  sh '''
-                     java -version
-                     mvn clean install -DskipTests 
-                  '''
-               }
-            }
-         }
-      }
-      stage('Unit Tests') {
-         // Run unit tests
-         options {
-            timeout(time: 1, unit: 'MINUTES')
-         }
-         steps {
-            script {
-               CURRENT_STAGE = 'Unit Tests'
-               docker.image('citools-isis2603:latest').inside('-v $HOME/.m2:/root/.m2:z -u root') {
-                  sh '''
-                     mvn verify -Punit-tests
-                  '''
-               }
-            }
-         }
-      }
-      stage('Integration Tests') {
-         // Run integration tests
-         options {
-            timeout(time: 1, unit: 'MINUTES')
-         }
-         steps {
-            script {
-               CURRENT_STAGE = 'Integration Tests'
-               docker.image('citools-isis2603:latest').inside('-v $HOME/.m2:/root/.m2:z -u root') {
-                  sh '''
-                     mvn verify -Pintegration-tests
-                  '''
-               }
-            }
-         }
-      }
+      // stage('Build') {
+      //    // Build artifacts
+      //    options {
+      //       timeout(time: 1, unit: 'MINUTES')
+      //    }
+      //    steps {
+      //       script {
+      //          CURRENT_STAGE = 'Build'
+      //          docker.image('citools-isis2603:latest').inside('-v $HOME/.m2:/root/.m2:z -u root') {
+      //             sh '''
+      //                java -version
+      //                mvn clean install -DskipTests 
+      //             '''
+      //          }
+      //       }
+      //    }
+      // }
+      // stage('Unit Tests') {
+      //    // Run unit tests
+      //    options {
+      //       timeout(time: 1, unit: 'MINUTES')
+      //    }
+      //    steps {
+      //       script {
+      //          CURRENT_STAGE = 'Unit Tests'
+      //          docker.image('citools-isis2603:latest').inside('-v $HOME/.m2:/root/.m2:z -u root') {
+      //             sh '''
+      //                mvn verify -Punit-tests
+      //             '''
+      //          }
+      //       }
+      //    }
+      // }
+      // stage('Integration Tests') {
+      //    // Run integration tests
+      //    options {
+      //       timeout(time: 1, unit: 'MINUTES')
+      //    }
+      //    steps {
+      //       script {
+      //          CURRENT_STAGE = 'Integration Tests'
+      //          docker.image('citools-isis2603:latest').inside('-v $HOME/.m2:/root/.m2:z -u root') {
+      //             sh '''
+      //                mvn verify -Pintegration-tests
+      //             '''
+      //          }
+      //       }
+      //    }
+      // }
       // stage('Static Analysis') {
       //    // Run static analysis
       //    steps {
