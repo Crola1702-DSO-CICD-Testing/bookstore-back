@@ -14,6 +14,9 @@ RUN java -jar target/app.jar & \
     sleep 20 && \
     newman run --env-var baseUrl=http://127.0.0.1:8080/api collections/*.postman_collection.json
 
+FROM build AS integration-test
+RUN mvn verify -Pintegration-tests
+
 FROM eclipse-temurin:21-jre-alpine AS runtime
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
