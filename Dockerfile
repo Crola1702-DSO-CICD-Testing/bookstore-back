@@ -5,16 +5,15 @@ COPY src ./src
 RUN mvn clean package -DskipTests && \
     mv target/bookstore-back-*.jar target/app.jar
 
-FROM build AS test
+FROM build as test-deps
 RUN apt-get update && apt-get install -y nodejs npm && \
-    npm install -g newman
+    npm install -g newman postman-combine-collections
 COPY collections ./collections
-RUN mvn test
-RUN java -jar target/app.jar & \
-    sleep 20 && \
-    newman run --env-var baseUrl=http://127.0.0.1:8080/api collections/*.postman_collection.json
 
-FROM build AS integration-test
+FROM test-deps AS unit-tests
+RUN mvn verify -Punit-tests
+
+FROM test-deps AS integration-tests
 RUN mvn verify -Pintegration-tests
 
 FROM eclipse-temurin:21-jre-alpine AS runtime
