@@ -17,10 +17,10 @@ pipeline {
          }
       }
       stage('Build') {
-         option {
-            timeout(time: 5, unit: 'MINUTES')
-         }
          steps {
+            option {
+               timeout(time: 5, unit: 'MINUTES')
+            }
             script {
                CURRENT_STAGE = 'Build'
                sh "docker build --target build -t ${env.GIT_REPO}-build:latest ."
@@ -32,11 +32,9 @@ pipeline {
             timeout(time: 5, unit: 'MINUTES')
          }
          steps {
-            steps {
-               script {
-                  CURRENT_STAGE = 'Build and Test'
-                  sh "docker build --target test -t ${env.GIT_REPO}-test:latest ."
-               }
+            script {
+               CURRENT_STAGE = 'Build and Test'
+               sh "docker build --target test -t ${env.GIT_REPO}-test:latest ."
             }
          }
       }
@@ -45,11 +43,9 @@ pipeline {
             timeout(time: 2, unit: 'MINUTES')
          }
          steps {  
-            steps {
-               script {
-                  CURRENT_STAGE = 'Package Runtime Image'
-                  sh "docker build -t ${env.GIT_REPO}-runtime:${env.BUILD_ID} -t ${env.GIT_REPO}-runtime:latest ."
-               }
+            script {
+               CURRENT_STAGE = 'Package Runtime Image'
+               sh "docker build -t ${env.GIT_REPO}-runtime:${env.BUILD_ID} -t ${env.GIT_REPO}-runtime:latest ."
             }
          }
       }
