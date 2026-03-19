@@ -11,17 +11,16 @@ pipeline {
       stage('Checkout') { 
          steps {
             scmSkip(deleteBuild: true, skipPattern:'.*\\[ci-skip\\].*')
-
             git branch: 'main', 
                credentialsId: env.GIT_CREDENTIAL_ID,
                url: 'https://github.com/Crola1702-DSO-CICD-Testing/' + env.GIT_REPO
          }
       }
       stage('Build') {
+         option {
+            timeout(time: 5, unit: 'MINUTES')
+         }
          steps {
-            option {
-               timeout(time: 5, unit: 'MINUTES')
-            }
             script {
                CURRENT_STAGE = 'Build'
                sh "docker build --target build -t ${env.GIT_REPO}-build:latest ."
@@ -29,10 +28,10 @@ pipeline {
          }
       }
       stage('Test') {
+         options {
+            timeout(time: 5, unit: 'MINUTES')
+         }
          steps {
-            options {
-               timeout(time: 5, unit: 'MINUTES')
-            }
             steps {
                script {
                   CURRENT_STAGE = 'Build and Test'
@@ -42,10 +41,10 @@ pipeline {
          }
       }
       stage('Package Runtime Image') {
+         options {
+            timeout(time: 2, unit: 'MINUTES')
+         }
          steps {  
-            options {
-               timeout(time: 2, unit: 'MINUTES')
-            }
             steps {
                script {
                   CURRENT_STAGE = 'Package Runtime Image'
