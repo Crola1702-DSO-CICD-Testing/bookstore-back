@@ -4,7 +4,7 @@ pipeline {
       GIT_ORG = 'Crola1702-DSO-CICD-Testing'
       GIT_REPO = 'bookstore-back'
       GIT_CREDENTIAL_ID = 'github-token'
-      SONARQUBE_URL = 'http://sonaqube:9000'
+      SONARQUBE_URL = 'http://sonarqube:9000'
       SONAR_TOKEN = credentials('sonar-login')
       // ARCHID_TOKEN = credentials('archid')
    }
@@ -52,11 +52,18 @@ pipeline {
             script {
                // # `dso-net` debe existir y conectar con el contenedor de SonarQube
                sh """
-                  docker build \
-                     --network dso-net \
+                  # Crear y usar un builder de Buildx que tenga acceso a la red `dso-net` para comunicarse con SonarQube
+                  docker buildx create \
+                     --name dso-builder \
+                     --driver-opt network=dso-net \
+                     --use || docker buildx use dso-builder
+
+                  # Usar el builder para construir la imagen
+                  docker buildx build \
                      --secret id=sonar_token,env=${env.SONAR_TOKEN} \
                      --build-arg SONARQUBE_URL=${env.SONARQUBE_URL} \
                      --target static-analysis \
+                     --load \
                      -t ${env.GIT_REPO}-static-analysis:latest .
                """
             }
