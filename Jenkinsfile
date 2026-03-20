@@ -6,6 +6,7 @@ pipeline {
       GIT_CREDENTIAL_ID = 'github-token'
       SONARQUBE_URL = 'http://sonarqube:9000'
       SONAR_TOKEN = credentials('sonar-login')
+      REGISTRY_URL = "http://registry:5000"
       // ARCHID_TOKEN = credentials('archid')
    }
    stages { 
@@ -47,33 +48,33 @@ pipeline {
             }
          }
       }
-      stage('Static Analysis') {
-         steps {
-            script {
-               // # `dso-net` debe existir y conectar con el contenedor de SonarQube
-               sh """
-                  # Crear y usar un builder de Buildx que tenga acceso a la red `dso-net` para comunicarse con SonarQube
-                  docker buildx create \
-                     --name dso-builder \
-                     --driver-opt network=dso-net \
-                     --use || docker buildx use dso-builder
+      // stage('Static Analysis') {
+      //    steps {
+      //       script {
+      //          // # `dso-net` debe existir y conectar con el contenedor de SonarQube
+      //          sh """
+      //             # Crear y usar un builder de Buildx que tenga acceso a la red `dso-net` para comunicarse con SonarQube
+      //             docker buildx create \
+      //                --name dso-builder \
+      //                --driver-opt network=dso-net \
+      //                --use || docker buildx use dso-builder
 
-                  # Usar el builder para construir la imagen
-                  docker buildx build \
-                     --secret id=sonar_token,env=${env.SONAR_TOKEN} \
-                     --build-arg SONARQUBE_URL=${env.SONARQUBE_URL} \
-                     --target static-analysis \
-                     --load \
-                     -t ${env.GIT_REPO}-static-analysis:latest .
-               """
-            }
-         }
-         post {
-            always {
-               echo "Static analysis completed. Check SonarQube for details."
-            }
-         }
-      }
+      //             # Usar el builder para construir la imagen
+      //             docker buildx build \
+      //                --secret id=sonar_token,env=${env.SONAR_TOKEN} \
+      //                --build-arg SONARQUBE_URL=${env.SONARQUBE_URL} \
+      //                --target static-analysis \
+      //                --load \
+      //                -t ${env.GIT_REPO}-static-analysis:latest .
+      //          """
+      //       }
+      //    }
+      //    post {
+      //       always {
+      //          echo "Static analysis completed. Check SonarQube for details."
+      //       }
+      //    }
+      // }
       stage('Package Runtime Image') {
          options {
             timeout(time: 2, unit: 'MINUTES')
@@ -82,8 +83,8 @@ pipeline {
             script {
                CURRENT_STAGE = 'Package Runtime Image'
                sh "docker build -t ${env.GIT_REPO}-runtime:${env.BUILD_ID} -t ${env.GIT_REPO}-runtime:latest ."
-               sh "docker save -o ${env.GIT_REPO}-runtime-${env.BUILD_ID}.tar ${env.GIT_REPO}-runtime:latest"
-               archiveArtifacts artifacts: "*.tar", fingerprint: true
+               sh "docker tag ${env.GIT_REPO}-runtime:latest ${env.REGISTRY_URL}/${env.GIT_REPO}-runtime:latest"
+               sh "docker push ${env.REGISTRY_URL}/${env.GIT_REPO}-runtime:latest"
             }
          }
       }
