@@ -52,14 +52,12 @@ pipeline {
          steps {
             script {
                sh """
-                  docker run --rm \
+                  docker build \
                      --network host \
-                     -v \$(pwd):/app \
-                     -w /app \
-                     maven:3.9.8-eclipse-temurin-21 \
-                     mvn sonar:sonar \
-                           -Dsonar.token=${env.SONAR_TOKEN} \
-                           -Dsonar.host.url=http://sonarqube:9000
+                     --secret id=sonar_token,env=${env.SONAR_TOKEN} \
+                     --build-arg SONARQUBE_URL=${env.SONARQUBE_URL} \
+                     --target static-analysis \
+                     -t ${env.GIT_REPO}-static-analysis:latest .
                """
             }
          }
