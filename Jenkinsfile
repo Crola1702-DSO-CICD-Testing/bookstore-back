@@ -6,7 +6,7 @@ pipeline {
       GIT_CREDENTIAL_ID = 'github-token'
       SONARQUBE_URL = 'http://sonarqube:9000'
       SONAR_TOKEN = credentials('sonar-login')
-      REGISTRY_URL = "http://registry:5000"
+      REGISTRY_URL = "localhost:5000"
       // ARCHID_TOKEN = credentials('archid')
    }
    stages { 
