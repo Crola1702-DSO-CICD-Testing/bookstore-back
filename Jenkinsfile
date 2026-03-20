@@ -48,12 +48,12 @@ pipeline {
          }
       }
       stage('Static Analysis') {
-         // Run static analysis
          steps {
             script {
+               // # `dso-net` debe existir y conectar con el contenedor de SonarQube
                sh """
                   docker build \
-                     --network dso-net \ # Esta red debe existir y conectar con el contenedor de SonarQube
+                     --network dso-net \
                      --secret id=sonar_token,env=${env.SONAR_TOKEN} \
                      --build-arg SONARQUBE_URL=${env.SONARQUBE_URL} \
                      --target static-analysis \
