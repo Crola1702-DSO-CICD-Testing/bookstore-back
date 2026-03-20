@@ -4,9 +4,9 @@ pipeline {
       GIT_ORG = 'Crola1702-DSO-CICD-Testing'
       GIT_REPO = 'bookstore-back'
       GIT_CREDENTIAL_ID = 'github-token'
-      // SONARQUBE_URL = 'http://172.24.101.209:8082/sonar-isis2603'
+      SONARQUBE_URL = 'http://sonaqube:9000'
+      SONAR_TOKEN = credentials('sonar-login')
       // ARCHID_TOKEN = credentials('archid')
-      // SONAR_TOKEN = credentials('sonar-login')
    }
    stages { 
       stage('Checkout') { 
@@ -76,18 +76,14 @@ pipeline {
             ])
          }
       }
-      // stage('Static Analysis') {
-      //    // Run static analysis
-      //    steps {
-      //       script {
-      //          docker.image('citools-isis2603:latest').inside('-v $HOME/.m2:/root/.m2:z -u root') {
-      //             sh '''
-      //                mvn sonar:sonar -Dsonar.token=${SONAR_TOKEN} -Dsonar.host.url=${SONARQUBE_URL}
-      //             '''
-      //          }
-      //       }
-      //    }
-      // }
+      stage('Static Analysis') {
+         // Run static analysis
+         steps {
+            script {
+               sh "mvn sonar:sonar -Dsonar.token=${env.SONAR_TOKEN} -Dsonar.host.url=${env.SONARQUBE_URL}"
+            }
+         }
+      }
       // stage('ARCC') {
       //    // Run arcc analysis
       //    steps {
