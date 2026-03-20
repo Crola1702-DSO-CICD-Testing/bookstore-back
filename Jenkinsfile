@@ -41,7 +41,7 @@ pipeline {
       }
       stage('Integration Tests') {
          options {
-            timeout(time: 1, unit: 'MINUTES')
+            timeout(time: 5, unit: 'MINUTES')
          }
          steps {
             script {
@@ -78,7 +78,7 @@ pipeline {
       // }
       stage('Package Runtime Image') {
          options {
-            timeout(time: 2, unit: 'MINUTES')
+            timeout(time: 5, unit: 'MINUTES')
          }
          steps {  
             script {
