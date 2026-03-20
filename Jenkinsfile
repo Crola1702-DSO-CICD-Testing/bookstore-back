@@ -7,6 +7,7 @@ pipeline {
       SONARQUBE_URL = 'http://sonarqube:9000'
       SONAR_TOKEN = credentials('sonar-login')
       REGISTRY_URL = "localhost:5000"
+      DEPLOY_URL = "10.135.250.154:3000"
       // ARCHID_TOKEN = credentials('archid')
    }
    stages { 
@@ -30,7 +31,7 @@ pipeline {
       }
       stage('Unit Tests') {
          options {
-            timeout(time: 5, unit: 'MINUTES')
+            timeout(time: 10, unit: 'MINUTES')
          }
          steps {
             script {
@@ -85,6 +86,7 @@ pipeline {
                sh "docker build -t ${env.GIT_REPO}-runtime:${env.BUILD_ID} -t ${env.GIT_REPO}-runtime:latest ."
                sh "docker tag ${env.GIT_REPO}-runtime:latest ${env.REGISTRY_URL}/${env.GIT_REPO}-runtime:latest"
                sh "docker push ${env.REGISTRY_URL}/${env.GIT_REPO}-runtime:latest"
+               sh "curl -X POST http://${env.DEPLOY_URL}/fetch"
             }
          }
       }
