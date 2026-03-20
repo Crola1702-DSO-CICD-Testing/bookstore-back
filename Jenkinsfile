@@ -9,14 +9,14 @@ pipeline {
       // ARCHID_TOKEN = credentials('archid')
    }
    stages { 
-      stage('Checkout') { 
-         steps {
-            scmSkip(deleteBuild: true, skipPattern:'.*\\[ci-skip\\].*')
-            git branch: 'main', 
-               credentialsId: env.GIT_CREDENTIAL_ID,
-               url: 'https://github.com/' + env.GIT_ORG + '/' + env.GIT_REPO
-         }
-      }
+      // stage('Checkout') { 
+      //    steps {
+      //       scmSkip(deleteBuild: true, skipPattern:'.*\\[ci-skip\\].*')
+      //       git branch: 'main', 
+      //          credentialsId: env.GIT_CREDENTIAL_ID,
+      //          url: 'https://github.com/' + env.GIT_ORG + '/' + env.GIT_REPO
+      //    }
+      // }
       stage('Build') {
          options {
             timeout(time: 5, unit: 'MINUTES')
