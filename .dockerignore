@@ -1,0 +1,13 @@
+target/
+.git/
+.mvn/
+mvnw
+mvnw.cmd
+Dockerfile
+.dockerignore
+.vscode/
+it/
+reports/
+Jenkinsfile
+lombok.config
+README.md
