@@ -43,7 +43,29 @@ pipeline {
          }
          steps {
             script {
-                  sh "docker build --target integration-tests -t ${env.GIT_REPO}-integration:latest ."
+               sh "docker build --target integration-tests -t ${env.GIT_REPO}-integration:latest ."
+            }
+         }
+      }
+      stage('Static Analysis') {
+         // Run static analysis
+         steps {
+            script {
+               sh """
+                  docker run --rm \
+                     --network host \
+                     -v \$(pwd):/app \
+                     -w /app \
+                     maven:3.9.8-eclipse-temurin-21 \
+                     mvn sonar:sonar \
+                           -Dsonar.token=${env.SONAR_TOKEN} \
+                           -Dsonar.host.url=http://sonarqube:9000
+               """
+            }
+         }
+         post {
+            always {
+               echo "Static analysis completed. Check SonarQube for details."
             }
          }
       }
@@ -74,14 +96,6 @@ pipeline {
                reportFiles: 'index.html',
                reportName: "GitInspector"
             ])
-         }
-      }
-      stage('Static Analysis') {
-         // Run static analysis
-         steps {
-            script {
-               sh "mvn sonar:sonar -Dsonar.token=${env.SONAR_TOKEN} -Dsonar.host.url=${env.SONARQUBE_URL}"
-            }
          }
       }
       // stage('ARCC') {

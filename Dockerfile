@@ -5,7 +5,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests && \
     mv target/bookstore-back-*.jar target/app.jar
 
-FROM build as test-deps
+FROM build AS test-deps
 RUN apt-get update && apt-get install -y nodejs npm && \
     npm install -g newman postman-combine-collections
 COPY collections ./collections
