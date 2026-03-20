@@ -53,7 +53,7 @@ pipeline {
             script {
                sh """
                   docker build \
-                     --network host \
+                     --network dso-net \ # Esta red debe existir y conectar con el contenedor de SonarQube
                      --secret id=sonar_token,env=${env.SONAR_TOKEN} \
                      --build-arg SONARQUBE_URL=${env.SONARQUBE_URL} \
                      --target static-analysis \
